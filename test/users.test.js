@@ -1,6 +1,6 @@
 import { after, before, describe, it } from 'node:test'
 import assert from 'node:assert'
-import buildApp from '../app.js'
+import buildApp from '../src/app.js'
 
 describe('Users', () => {
     let app

@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert'
-import db from '../db.js'
+import db from '../src/db.js'
 
 describe('Database', () => {
     it('should connect to the database and insert a user', async () => {

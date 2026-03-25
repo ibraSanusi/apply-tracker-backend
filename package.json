@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "dev": "node --watch server.js",
+    "dev": "node --watch src/server.js",
     "test": "node --test --verbose",
     "postinstall": "npx prisma generate",
     "prisma:generate": "npx prisma generate",
