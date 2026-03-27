@@ -77,12 +77,12 @@ export async function updateRecoveryToken(data, db) {
 export async function setUserVerified(userId, db) {
     const query = `
         UPDATE "User"
-        SET "isVerified" = $1
-        WHERE "id" = $2
+        SET "isVerified" = $1, "verifyToken" = $2, "verifyTokenExpiry" = $3
+        WHERE "id" = $4
         RETURNING "isVerified"
     `
 
-    const result = await db.query(query, [true, userId])
+    const result = await db.query(query, [true, null, null, userId])
     return result.rows[0]
 }
 
