@@ -109,3 +109,8 @@ export async function resetUserRecoveryToken(userId, db) {
     const result = await db.query(query, [null, null, userId])
     return result.updatedRows
 }
+
+export async function deleteUserByEmail(email, db) {
+    const result = await db.query('DELETE FROM "User" WHERE email = $1', [email])
+    return result.rowCount
+}
