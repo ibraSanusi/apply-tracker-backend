@@ -1,8 +1,9 @@
-import { saveApplicationCtrl } from "../controllers/applicationController.js"
-import { saveApplicationSchema } from "../schemas/applicationSchema.js"
+import { saveApplicationCtrl, createApplicationCtrl, validateUserCtrl } from "../controllers/applicationController.js"
+import { saveApplicationSchema, createApplicationSchema } from "../schemas/applicationSchema.js"
 
 async function applicationRoutes(fastify) {
-    // create cover
+    fastify.addHook('preHandler', validateUserCtrl)
+
     fastify.post('/save', { schema: saveApplicationSchema }, saveApplicationCtrl)
     // fastify.post('/send-verification-mail', { schema: sendVerificationEmailSchema }, sendVerificationEmailCtrl)
 }

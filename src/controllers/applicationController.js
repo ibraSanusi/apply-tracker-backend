@@ -11,3 +11,11 @@ export async function saveApplicationCtrl(request, reply) {
         reply.code(500).send({ message: 'Error saving application' })
     }
 }
+export async function validateUserCtrl(request, reply) {
+    const user = await validateUser(request.headers.authorization, request.server.db)
+    if (!user) return reply.code(401).send({ message: 'Usuario no autorizado' })
+}
+
+export async function createApplicationCtrl(request, reply) {
+
+}
