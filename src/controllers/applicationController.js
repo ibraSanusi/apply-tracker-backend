@@ -1,5 +1,6 @@
 import { saveApplicationService } from "../services/applicationService.js"
-import { askChatService, validateUser } from "../services/userService.js"
+import { validateUser } from "../services/userService.js"
+import { askChatService } from '../services/applicationService.js'
 
 export async function saveApplicationCtrl(request, reply) {
     try {

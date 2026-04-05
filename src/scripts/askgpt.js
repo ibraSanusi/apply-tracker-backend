@@ -1,5 +1,5 @@
 import { program } from "commander";
-import { askChatService } from "../services/userService.js"
+import { askChatService } from "../services/applicationService.js"
 
 const cvTemplate = `
 Ibrahim Ayodeji Sanusi
