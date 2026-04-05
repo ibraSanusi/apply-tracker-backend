@@ -41,3 +41,33 @@ export const saveApplicationSchema = {
         }
     }
 }
+
+export const askChatSchema = {
+    body: {
+        type: 'object',
+        required: ['input', 'cvTemplate'],
+        properties: {
+            input: { type: 'string' },  // la oferta de trabajo
+            cvTemplate: { type: 'string' },  // el CV base
+        }
+    },
+    response: {
+        200: {
+            type: 'object',
+            properties: {
+                data: {
+                    type: 'object',
+                    properties: {
+                        company: { type: 'string' },
+                        position: { type: 'string' },
+                        email: { type: 'string', nullable: true },
+                        salary: { type: 'number', nullable: true },
+                        medium: { type: 'string', nullable: true },
+                        cv: { type: 'string' },
+                        cover: { type: 'string' },
+                    }
+                }
+            }
+        }
+    }
+}
