@@ -19,8 +19,14 @@ export async function validateUserCtrl(request, reply) {
 
 export async function askChatCtrl(request, reply) {
     try {
-        const chatResponse = askChatService(request.body.chat)
-        return reply.code(200).send({ data: chatResponse, message: 'Openai responded correctly' })
+        const { jobDescription, cvTemplate } = request.body
+
+        const stream = await askChatService({ jobDescription, cvTemplate })
+
+        reply
+            .code(200)
+            .header('Content-Type', 'text/event-stream')
+            .send(stream)
     } catch (error) {
         console.log('askChat(error): ', error)
         return reply.code(500).send({ message: 'Error while asking Chat GPT' })

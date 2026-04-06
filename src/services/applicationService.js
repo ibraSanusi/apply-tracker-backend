@@ -8,8 +8,9 @@ import {
 import 'dotenv/config.js'
 import { GetObjectCommand } from "@aws-sdk/client-s3"
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
+import { applicationChatInstruction, applicationChatResponseFormat } from "../utils/constants.js";
+import { Readable } from 'node:stream'
 
-// Set the creadential of aws
 const s3Client = new S3Client({
     region: 'eu-north-1',
     credentials: {
@@ -19,7 +20,7 @@ const s3Client = new S3Client({
 });
 
 const openaiClient = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY, // This is the default and can be omitted
+    apiKey: process.env.OPENAI_API_KEY,
 });
 
 
@@ -79,63 +80,26 @@ export async function getApplicationObjectSignedUrl(key) {
     })
 }
 
-export async function askChatService(chatInput, cvTemplate) {
-    const completion = await openaiClient.chat.completions.create({
-        model: 'gpt-5-nano',
-        messages: [
-            {
-                role: 'system',
-                content: `Eres un asistente especializado en selección de personal y redacción de CVs.
-                Recibirás una oferta de trabajo y un CV base del candidato.
-                
-                Tu tarea es:
-                1. Extraer la información clave de la oferta (empresa, puesto, email, salario, medio de contacto).
-                2. Adaptar el CV para maximizar su relevancia frente a la oferta, sin inventar experiencia.
-                3. Generar una carta de presentación personalizada y convincente.
-                
-                Reglas para adaptar el CV:
-                - Mantén todos los logros concretos del CV original, especialmente integraciones con sistemas externos, cumplimiento normativo o trabajo con terceros.
-                - Reencuadra la experiencia existente como transferible cuando sea relevante para los requisitos del puesto.
-                - Incluye las keywords exactas de la oferta en el CV, especialmente tecnologías y requisitos obligatorios.
-                - Si el candidato no tiene experiencia directa con una tecnología requerida, no lo menciones explícitamente. Usa la experiencia más cercana como puente.
-                
-                Reglas para la carta de presentación:
-                - Menciona al menos un logro concreto del CV que conecte directamente con el sector o los requisitos del puesto.
-                - Evita frases genéricas sin contenido real.
-                - Adapta el tono al sector de la empresa si es identificable.
-                
-                Devuelve ÚNICAMENTE un objeto JSON válido, sin markdown ni explicaciones.
-                Si un campo no aparece en la oferta, devuelve null.`
-            },
-            {
-                role: 'assistant',
-                content: JSON.stringify({
-                    company: "Crescenta",
-                    position: "Junior Full-Stack Developer",
-                    email: "email (si existe)",
-                    salary: "number (salario máximo si hay rango)",
-                    medium: "string (si indica el medio por el que aplica, sino null)",
-                    cv: {
-                        name: "string",
-                        title: "string",
-                        location: "string",
-                        contact: { email: "string", github: "string", linkedin: "string" },
-                        profile: "string",
-                        experience: [{ company: "string", role: "string", period: "string", bullets: ["string"] }],
-                        education: [{ title: "string", center: "string", location: "string" }],
-                        skills: { frontend: ["string"], backend: ["string"], testing: ["string"] },
-                        additional: "string"
-                    },
-                    cover: "texto plano de la carta de presentación"
-                })
-            },
-            {
-                role: 'user',
-                content: `Oferta de trabajo:\n${chatInput}\n\nMi CV base:\n${cvTemplate}`
-            },
+export async function askChatService({ jobDescription, cvTemplate }) {
+    const openaiStream = await openaiClient.responses.create({
+        model: 'gpt-4o',
+        input: [
+            { role: 'system', content: applicationChatInstruction },
+            { role: 'assistant', content: applicationChatResponseFormat },
+            { role: 'user', content: `Oferta de trabajo:\n${jobDescription}\n\nMi CV base:\n${cvTemplate}` },
         ],
-    });
+        stream: true,
+    })
 
-    const raw = completion.choices[0].message.content
-    return JSON.parse(raw)
+    const readable = new Readable({ read() { } })  // read vacío — tú controlas cuándo se pushea
+
+        ; (async () => {
+            for await (const event of openaiStream) {
+                if (!event.delta) continue
+                readable.push(event.delta)
+            }
+            readable.push(null)
+        })()
+
+    return readable
 }
