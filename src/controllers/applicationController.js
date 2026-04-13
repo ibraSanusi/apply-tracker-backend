@@ -1,4 +1,4 @@
-import { getApplicationsService, saveApplicationService } from "../services/applicationService.js"
+import { getApplicationsService, saveApplicationService, getApplicationByIdService, updateApplicationService, deleteApplicationService } from "../services/applicationService.js"
 import { validateUser } from "../services/userService.js"
 import { askChatService } from '../services/applicationService.js'
 
@@ -42,6 +42,67 @@ export async function getApplicationsCtrl(request, reply) {
     } catch (error) {
         console.log('Error getting applications: ', error)
         reply.code(500).send({ message: 'Error getting applications' })
+    }
+}
+
+export async function getApplicationByIdCtrl(request, reply) {
+    try {
+        const { id } = request.params
+        const application = await getApplicationByIdService(id, request.server.db)
+
+        if (!application) {
+            return reply.code(404).send({ message: 'Application not found' })
+        }
+
+        if (application.userId && application.userId !== request.user.id) {
+            return reply.code(403).send({ message: 'No tienes permiso para ver esta aplicación' })
+        }
+
+        reply.code(200).send({ data: application })
+    } catch (error) {
+        console.log('Error getting application by ID: ', error)
+        reply.code(500).send({ message: 'Error getting application' })
+    }
+}
+
+export async function updateApplicationCtrl(request, reply) {
+    try {
+        const { id } = request.params
+        const data = request.body
+
+        const existing = await getApplicationByIdService(id, request.server.db)
+        if (!existing) {
+            return reply.code(404).send({ message: 'Application not found' })
+        }
+        if (existing.userId && existing.userId !== request.user.id) {
+            return reply.code(403).send({ message: 'No tienes permiso para editar esta aplicación' })
+        }
+
+        const updated = await updateApplicationService(id, data, request.server.db)
+        reply.code(200).send({ data: updated, message: 'Application updated correctly' })
+    } catch (error) {
+        console.log('Error updating application: ', error)
+        reply.code(500).send({ message: 'Error updating application' })
+    }
+}
+
+export async function deleteApplicationCtrl(request, reply) {
+    try {
+        const { id } = request.params
+
+        const existing = await getApplicationByIdService(id, request.server.db)
+        if (!existing) {
+            return reply.code(404).send({ message: 'Application not found' })
+        }
+        if (existing.userId && existing.userId !== request.user.id) {
+            return reply.code(403).send({ message: 'No tienes permiso para borrar esta aplicación' })
+        }
+
+        await deleteApplicationService(id, request.server.db)
+        reply.code(200).send({ message: 'Application deleted correctly' })
+    } catch (error) {
+        console.log('Error deleting application: ', error)
+        reply.code(500).send({ message: 'Error deleting application' })
     }
 }
 

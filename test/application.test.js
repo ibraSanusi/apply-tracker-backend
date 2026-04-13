@@ -92,4 +92,54 @@ describe('Application', () => {
         assert.ok(Array.isArray(result))
         assert.ok(result.length > 0)
     })
+
+    it('should get application by id correctly', async () => {
+        const response = await app.inject({
+            method: 'GET',
+            headers: authorizationHeader,
+            url: `/applications/${applicationId}`,
+        })
+
+        assert.strictEqual(response.statusCode, 200)
+        const result = JSON.parse(response.body).data
+        assert.strictEqual(result.id, applicationId)
+        assert.ok(result.cvUrl)
+        assert.ok(result.coverUrl)
+    })
+
+    it('should update application correctly', async () => {
+        const newPosition = 'Senior Developer'
+        const response = await app.inject({
+            method: 'PUT',
+            headers: authorizationHeader,
+            url: `/applications/${applicationId}`,
+            payload: {
+                position: newPosition,
+                cv: 'nuevo cv'
+            }
+        })
+
+        assert.strictEqual(response.statusCode, 200)
+        const result = JSON.parse(response.body).data
+        assert.strictEqual(result.position, newPosition)
+        assert.ok(result.cvUrl)
+    })
+
+    it('should delete application correctly', async () => {
+        const response = await app.inject({
+            method: 'DELETE',
+            headers: authorizationHeader,
+            url: `/applications/${applicationId}`,
+        })
+
+        assert.strictEqual(response.statusCode, 200)
+        
+        // Verificar que ya no existe
+        const getResponse = await app.inject({
+            method: 'GET',
+            headers: authorizationHeader,
+            url: `/applications/${applicationId}`,
+        })
+        assert.strictEqual(getResponse.statusCode, 404)
+    })
 })

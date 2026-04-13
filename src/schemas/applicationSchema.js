@@ -42,6 +42,120 @@ export const saveApplicationSchema = {
     }
 }
 
+export const getApplicationByIdSchema = {
+    headers: {
+        type: 'object',
+        required: ['authorization'],
+        properties: {
+            authorization: { type: 'string' },
+        }
+    },
+    params: {
+        type: 'object',
+        required: ['id'],
+        properties: {
+            id: { type: 'number' }
+        }
+    },
+    response: {
+        200: {
+            type: 'object',
+            properties: {
+                data: {
+                    type: 'object',
+                    properties: {
+                        id: { type: 'number' },
+                        company: { type: 'string' },
+                        position: { type: 'string' },
+                        createdAt: { type: 'string', format: 'date-time' },
+                        email: { type: 'string', format: 'email', nullable: true },
+                        salary: { type: 'number', nullable: true },
+                        medium: { type: 'string', nullable: true },
+                        cvUrl: { type: 'string', format: 'uri' },
+                        coverUrl: { type: 'string', format: 'uri' },
+                    }
+                }
+            }
+        }
+    }
+}
+
+export const updateApplicationSchema = {
+    headers: {
+        type: 'object',
+        required: ['authorization'],
+        properties: {
+            authorization: { type: 'string' },
+        }
+    },
+    params: {
+        type: 'object',
+        required: ['id'],
+        properties: {
+            id: { type: 'number' }
+        }
+    },
+    body: {
+        type: 'object',
+        properties: {
+            company: { type: 'string' },
+            position: { type: 'string' },
+            email: { type: 'string', format: 'email' },
+            salary: { type: 'number' },
+            medium: { type: 'string' },
+            cv: { type: 'string' },
+            cover: { type: 'string' },
+        }
+    },
+    response: {
+        200: {
+            type: 'object',
+            properties: {
+                data: {
+                    type: 'object',
+                    properties: {
+                        id: { type: 'number' },
+                        company: { type: 'string' },
+                        position: { type: 'string' },
+                        createdAt: { type: 'string', format: 'date-time' },
+                        email: { type: 'string', format: 'email', nullable: true },
+                        salary: { type: 'number', nullable: true },
+                        medium: { type: 'string', nullable: true },
+                        cvUrl: { type: 'string', format: 'uri' },
+                        coverUrl: { type: 'string', format: 'uri' },
+                    }
+                },
+                message: { type: 'string' }
+            }
+        }
+    }
+}
+
+export const deleteApplicationSchema = {
+    headers: {
+        type: 'object',
+        required: ['authorization'],
+        properties: {
+            authorization: { type: 'string' },
+        }
+    },
+    params: {
+        type: 'object',
+        required: ['id'],
+        properties: {
+            id: { type: 'number' }
+        }
+    },
+    response: {
+        200: {
+            type: 'object',
+            properties: {
+                message: { type: 'string' }
+            }
+        }
+    }
+}
+
 export const askChatSchema = {
     body: {
         type: 'object',

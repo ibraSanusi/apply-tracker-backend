@@ -1,4 +1,4 @@
-import { insert } from "../utils/db.js"
+import { insert, update } from "../utils/db.js"
 
 export async function insertApplication(application, db) {
     return await insert({ data: application, model: 'JobApplication' }, db)
@@ -27,4 +27,8 @@ export async function getApplications(userId, db) {
     `
     const result = await db.query(query, [userId])
     return result.rows
+}
+
+export async function updateApplication(id, data, db) {
+    return await update({ model: 'JobApplication', data, id }, db)
 }
