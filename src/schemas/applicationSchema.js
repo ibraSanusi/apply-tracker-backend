@@ -71,3 +71,37 @@ export const askChatSchema = {
         }
     }
 }
+
+export const getApplicationsSchema = {
+    headers: {
+        type: 'object',
+        required: ['authorization'],
+        properties: {
+            authorization: { type: 'string' },
+        }
+    },
+    response: {
+        200: {
+            type: 'object',
+            properties: {
+                data: {
+                    type: 'array',
+                    items: {
+                        type: 'object',
+                        properties: {
+                            id: { type: 'number' },
+                            company: { type: 'string' },
+                            position: { type: 'string' },
+                            createdAt: { type: 'string', format: 'date-time' },
+                            email: { type: 'string', format: 'email' },
+                            salary: { type: 'number' },
+                            medium: { type: 'string' },
+                            cvUrl: { type: 'string', format: 'uri' },
+                            coverUrl: { type: 'string', format: 'uri' },
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

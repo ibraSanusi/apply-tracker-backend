@@ -18,3 +18,13 @@ export async function findApplicationById(id, db) {
     const result = await db.query(query, [id])
     return result.rows[0]
 }
+
+export async function getApplications(userId, db) {
+    const query = `
+        SELECT * 
+        FROM "JobApplication" 
+        WHERE "userId" = $1 
+    `
+    const result = await db.query(query, [userId])
+    return result.rows
+}

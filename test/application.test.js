@@ -53,7 +53,8 @@ describe('Application', () => {
         })
 
         assert.equal(chatResponse.statusCode, 200)
-        assert.equal(chatResponse.headers['content-type'], 'text/event-stream')
+        assert.equal(chatResponse.headers['transfer-encoding'], 'chunked')
+        assert.equal(chatResponse.headers['content-type'], 'application/octet-stream')
     })
 
     it('should save correctly', async () => {
@@ -78,5 +79,17 @@ describe('Application', () => {
 
         const application = await findApplicationById(id, app.db)
         assert.strictEqual(id, application.id)
+    })
+
+    it('should get applications correctly', async () => {
+        const applicationsResponse = await app.inject({
+            method: 'GET',
+            headers: authorizationHeader,
+            url: '/applications/get-all',
+        })
+
+        const result = JSON.parse(applicationsResponse.body).data
+        assert.ok(Array.isArray(result))
+        assert.ok(result.length > 0)
     })
 })

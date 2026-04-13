@@ -1,4 +1,4 @@
-import { insertApplication } from "../repositories/applicationRepository.js"
+import { getApplications, insertApplication } from "../repositories/applicationRepository.js"
 import 'dotenv/config.js'
 import OpenAI from 'openai';
 import {
@@ -95,15 +95,24 @@ export async function askChatService({ jobDescription, cvTemplate }) {
 
     const readable = new Readable({ read() { } })
 
-    ;(async () => {
-        for await (const chunk of openaiStream) {
-            const content = chunk.choices[0]?.delta?.content || ''
-            if (content) {
-                readable.push(content)
+        ; (async () => {
+            for await (const chunk of openaiStream) {
+                const content = chunk.choices[0]?.delta?.content || ''
+                if (content) {
+                    readable.push(content)
+                }
             }
-        }
-        readable.push(null)
-    })()
+            readable.push(null)
+        })()
 
     return readable
+}
+
+export async function getApplicationsService(userId, db) {
+    const applications = await getApplications(userId, db)
+    return await Promise.all(applications.map(async application => {
+        const cvUrl = await getApplicationObjectSignedUrl(application.cvSlug)
+        const coverUrl = await getApplicationObjectSignedUrl(application.coverSlug)
+        return { ...application, cvUrl, coverUrl }
+    }))
 }

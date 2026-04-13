@@ -1,4 +1,4 @@
-import { saveApplicationService } from "../services/applicationService.js"
+import { getApplicationsService, saveApplicationService } from "../services/applicationService.js"
 import { validateUser } from "../services/userService.js"
 import { askChatService } from '../services/applicationService.js'
 
@@ -18,18 +18,30 @@ export async function validateUserCtrl(request, reply) {
 }
 
 export async function askChatCtrl(request, reply) {
+    reply.header('Transfer-Encoding', 'chunked')
+    reply.header('Content-Type', 'application/octet-stream')
+
     try {
         const { jobDescription, cvTemplate } = request.body
 
         const stream = await askChatService({ jobDescription, cvTemplate })
 
-        reply
+        return reply
             .code(200)
-            .header('Content-Type', 'text/event-stream')
             .send(stream)
     } catch (error) {
         console.log('askChat(error): ', error)
         return reply.code(500).send({ message: 'Error while asking Chat GPT' })
+    }
+}
+
+export async function getApplicationsCtrl(request, reply) {
+    try {
+        const applications = await getApplicationsService(request.user.id, request.server.db)
+        reply.code(200).send({ data: applications })
+    } catch (error) {
+        console.log('Error getting applications: ', error)
+        reply.code(500).send({ message: 'Error getting applications' })
     }
 }
 
