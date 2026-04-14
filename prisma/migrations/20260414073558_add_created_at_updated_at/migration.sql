@@ -1,0 +1,12 @@
+/*
+  Warnings:
+
+  - Added the required column `updatedAt` to the `JobApplication` table without a default value. This is not possible if the table is not empty.
+
+*/
+-- AlterTable
+ALTER TABLE "JobApplication" ADD COLUMN "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ADD COLUMN "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT NOW();
+
+-- Remove default so Prisma manages it going forward
+ALTER TABLE "JobApplication" ALTER COLUMN "updatedAt" DROP DEFAULT;
