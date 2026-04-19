@@ -61,7 +61,7 @@ export async function uploadApplicationMediaS3({ cv, cover }) {
     const coverSlug = `applications/cover/${crypto.randomUUID()}.txt`
 
     // cv is expected to be an object (from Chat/AI)
-    const cvBuffer = await generateDocxFromJson(cv);
+    const cvBuffer = await generateDocxFromJson(JSON.parse(cv));
 
     const [cvUpload, coverUpload] = await uploadFilesS3([
         {
@@ -158,7 +158,7 @@ export async function updateApplicationService(id, body, db) {
     // Si se proporciona un nuevo CV, cargamos el nuevo y borramos el anterior
     if (cv) {
         const cvSlug = `applications/cv/${crypto.randomUUID()}.docx`
-        const cvBuffer = await generateDocxFromJson(cv);
+        const cvBuffer = await generateDocxFromJson(JSON.parse(cv));
         await uploadFilesS3([{
             key: cvSlug,
             body: cvBuffer,

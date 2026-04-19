@@ -15,7 +15,7 @@ export const saveApplicationSchema = {
             email: { type: 'string', format: 'email' },
             salary: { type: 'number' },
             medium: { type: 'string' },
-            cv: { type: 'object' },
+            cv: { type: 'string' },
             cover: { type: 'string' },
         }
     },

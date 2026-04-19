@@ -34,7 +34,7 @@ describe('Application', () => {
 
     it('should upload cv to S3 service', async () => {
         const payload = {
-            cv: sampleCV,
+            cv: JSON.stringify(sampleCV),
             cover: 'Esta es mi motivación'
         }
 
@@ -61,7 +61,7 @@ describe('Application', () => {
         const payload = {
             company: 'Google',
             position: 'Developer',
-            cv: sampleCV,
+            cv: JSON.stringify(sampleCV),
             cover: 'mi cover'
         }
 
@@ -115,7 +115,8 @@ describe('Application', () => {
             url: `/applications/${applicationId}`,
             payload: {
                 position: newPosition,
-                cv: 'nuevo cv'
+                cv: JSON.stringify(sampleCV),
+                cover: 'mi cover'
             }
         })
 
