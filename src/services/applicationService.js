@@ -10,6 +10,7 @@ import {
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
 import { applicationChatInstruction, applicationChatResponseFormat } from "../utils/constants.js";
 import { Readable } from 'node:stream'
+import { generateDocxFromJson } from "../utils/docxGenerator.js";
 
 const s3Client = new S3Client({
     region: 'eu-north-1',
@@ -35,20 +36,20 @@ export async function saveApplicationService(body, db) {
     return { ...application, cvUrl, coverUrl }
 }
 
-async function uploadTextFiles(files) {
+async function uploadFilesS3(files) {
     if (process.env.NODE_ENV === 'test') {
         return files.map((file, idx) => ({ key: file.key, location: `${file.key}${idx + 1}` }))
     }
 
     return await Promise.all(files.map(async file => {
-        const { key, body } = file
+        const { key, body, contentType } = file
 
         return await s3Client.send(
             new PutObjectCommand({
                 Bucket: process.env.AWS_S3_BUCKET,
                 Key: key,
-                Body: Buffer.from(body),
-                ContentType: 'text/plain',
+                Body: body,
+                ContentType: contentType || 'text/plain',
                 ContentDisposition: 'inline',
             }),
         )
@@ -56,15 +57,26 @@ async function uploadTextFiles(files) {
 }
 
 export async function uploadApplicationMediaS3({ cv, cover }) {
-    const cvSlug = `applications/cv/${crypto.randomUUID()}.txt`
+    const cvSlug = `applications/cv/${crypto.randomUUID()}.docx`
     const coverSlug = `applications/cover/${crypto.randomUUID()}.txt`
 
-    const [cvUpload, coverUpload] = await uploadTextFiles([
-        { key: cvSlug, body: cv },
-        { key: coverSlug, body: cover }
+    // cv is expected to be an object (from Chat/AI)
+    const cvBuffer = await generateDocxFromJson(cv);
+
+    const [cvUpload, coverUpload] = await uploadFilesS3([
+        { 
+            key: cvSlug, 
+            body: cvBuffer, 
+            contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' 
+        },
+        { 
+            key: coverSlug, 
+            body: Buffer.from(cover), 
+            contentType: 'text/plain' 
+        }
     ])
 
-    if (!cvUpload || !coverUpload) { throw new Error('Error uploading cover and cv to AWS') } // probablemente borrar el archivo que se llego a crear
+    if (!cvUpload || !coverUpload) { throw new Error('Error uploading cover and cv to AWS') }
 
     return { cvSlug, coverSlug }
 }
@@ -145,8 +157,13 @@ export async function updateApplicationService(id, body, db) {
 
     // Si se proporciona un nuevo CV, cargamos el nuevo y borramos el anterior
     if (cv) {
-        const cvSlug = `applications/cv/${crypto.randomUUID()}.txt`
-        await uploadTextFiles([{ key: cvSlug, body: cv }])
+        const cvSlug = `applications/cv/${crypto.randomUUID()}.docx`
+        const cvBuffer = await generateDocxFromJson(cv);
+        await uploadFilesS3([{ 
+            key: cvSlug, 
+            body: cvBuffer, 
+            contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' 
+        }])
         await deleteFileFromS3(existingApplication.cvSlug)
         updateData.cvSlug = cvSlug
     }
@@ -154,7 +171,11 @@ export async function updateApplicationService(id, body, db) {
     // Si se proporciona un nuevo Cover, cargamos el nuevo y borramos el anterior
     if (cover) {
         const coverSlug = `applications/cover/${crypto.randomUUID()}.txt`
-        await uploadTextFiles([{ key: coverSlug, body: cover }])
+        await uploadFilesS3([{ 
+            key: coverSlug, 
+            body: Buffer.from(cover), 
+            contentType: 'text/plain' 
+        }])
         await deleteFileFromS3(existingApplication.coverSlug)
         updateData.coverSlug = coverSlug
     }

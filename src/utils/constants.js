@@ -115,6 +115,7 @@ export const applicationChatInstruction = `
     1. Extraer la información clave de la oferta (empresa, puesto, email, salario, medio de contacto).
     2. Adaptar el CV para maximizar su relevancia frente a la oferta, sin inventar experiencia.
     3. Generar una carta de presentación personalizada y convincente.
+    4. Asegúrate de incluir los idiomas (languages) que posee el candidato si son mencionables o relevantes.
     
     Reglas para adaptar el CV:
     - Mantén todos los logros concretos del CV original, especialmente integraciones con sistemas externos, cumplimiento normativo o trabajo con terceros.
@@ -146,6 +147,7 @@ export const applicationChatResponseFormat = JSON.stringify({
         experience: [{ company: "string", role: "string", period: "string", bullets: ["string"] }],
         education: [{ title: "string", center: "string", location: "string" }],
         skills: { frontend: ["string"], backend: ["string"], testing: ["string"] },
+        languages: ["string"],
         additional: "string"
     },
     cover: "texto plano de la carta de presentación"
