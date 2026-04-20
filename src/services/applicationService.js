@@ -100,7 +100,7 @@ export async function askChatService({ jobDescription, cvTemplate }) {
         model: 'gpt-4o',
         messages: [
             { role: 'system', content: applicationChatInstruction },
-            { role: 'user', content: `Job Description:\n${jobDescription}\n\nMy Base CV:\n${cvTemplate}\n\nResponse format instructions:\n${applicationChatResponseFormat}` },
+            { role: 'user', content: `Oferta de trabajo:\n${jobDescription}\n\nCV base del candidato (adapta este CV a la oferta):\n${cvTemplate}\n\nDevuelve el resultado en este formato JSON:\n${applicationChatResponseFormat}` },
         ],
         stream: true,
     })

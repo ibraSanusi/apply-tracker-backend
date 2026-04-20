@@ -238,7 +238,7 @@ export const generateDocxFromJson = async (cvData) => {
                             }),
                             new TextRun({ text: "\n" }),
                             new TextRun({
-                                text: `${edu.center}  ·  ${edu.location}`,
+                                text: ` ${edu.center}  ·  ${edu.location}`,
                                 color: COLORS.SECONDARY,
                                 italics: true,
                                 size: 19,

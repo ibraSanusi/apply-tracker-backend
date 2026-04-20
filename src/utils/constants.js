@@ -108,50 +108,83 @@ IMPORTANTE: Si estas interesado en la oferta, no dudes en mandar tu CV a talento
 `
 
 export const applicationChatInstruction = `
-    Eres un asistente especializado en selección de personal y redacción de CVs.
-    Recibirás una oferta de trabajo y un CV base del candidato.
-    
-    Tu tarea es:
-    1. Extraer la información clave de la oferta (empresa, puesto, email, salario, medio de contacto).
-    2. Adaptar el CV para maximizar su relevancia frente a la oferta, sin inventar experiencia.
-    3. Generar una carta de presentación personalizada y convincente.
-    4. Asegúrate de incluir los idiomas (languages) que posee el candidato si son mencionables o relevantes.
-    
-    Reglas para adaptar el CV:
-    - Mantén todos los logros concretos del CV original, especialmente integraciones con sistemas externos, cumplimiento normativo o trabajo con terceros.
-    - Reencuadra la experiencia existente como transferible cuando sea relevante para los requisitos del puesto.
-    - Incluye las keywords exactas de la oferta en el CV, especialmente tecnologías y requisitos obligatorios.
-    - Si el candidato no tiene experiencia directa con una tecnología requerida, no lo menciones explícitamente. Usa la experiencia más cercana como puente.
-    
-    Reglas para la carta de presentación:
-    - Menciona al menos un logro concreto del CV que conecte directamente con el sector o los requisitos del puesto.
-    - Evita frases genéricas sin contenido real.
-    - Adapta el tono al sector de la empresa si es identificable.
-    
+    Eres un experto en selección de personal y optimización de CVs para ATS y recruiters.
+
+    Recibirás una oferta de trabajo y un CV base. Tu tarea es REESCRIBIR el CV para maximizar las probabilidades de conseguir una entrevista para ESA oferta concreta.
+
+    INSTRUCCIONES DE ADAPTACIÓN (OBLIGATORIAS):
+
+    1. PERFIL PROFESIONAL: Reescríbelo completamente para que el título y el resumen reflejen exactamente el puesto ofertado. Usa las keywords literales de la oferta.
+
+    2. EXPERIENCIA: 
+    - Reordena y reencuadra los bullets existentes para que los más relevantes para la oferta aparezcan primero.
+    - Reformula cada bullet usando el vocabulario exacto de la oferta cuando sea posible.
+    - Destaca explícitamente las tecnologías que coincidan con los requisitos.
+    - NO inventes experiencia, pero SÍ reformula la existente de forma más específica y orientada al puesto.
+
+    3. HABILIDADES: 
+    - Reordena las skills poniendo primero las que aparecen en la oferta.
+    - Añade keywords de la oferta que el candidato posea aunque no estuvieran en el CV original.
+    - Elimina o minimiza skills irrelevantes para este puesto.
+
+    4. CARTA DE PRESENTACIÓN:
+    - Menciona la empresa por su nombre.
+    - Conecta al menos 2 logros concretos del CV con requisitos específicos de la oferta.
+    - Tono adaptado al sector de la empresa.
+    - Sin frases genéricas vacías.
+
+    5. Extrae del job description: empresa, puesto, email de contacto (si aparece), salario (si aparece), medio de contacto.
+
+    REGLA CRÍTICA: El output debe ser notablemente diferente al CV de entrada. Si el CV adaptado se parece demasiado al original, has fallado en la tarea.
+
     Devuelve ÚNICAMENTE un objeto JSON válido, sin markdown ni explicaciones.
     Si un campo no aparece en la oferta, devuelve null.
 `
 
-export const applicationChatResponseFormat = JSON.stringify({
-    company: "string",
-    position: "string",
-    email: "email (si existe)",
-    salary: "number (salario máximo si hay rango)",
-    medium: "string (si indica el medio por el que aplica, sino null)",
-    cv: {
-        name: "string",
-        title: "string",
-        location: "string",
-        contact: { email: "string", github: "string", linkedin: "string" },
-        profile: "string",
-        experience: [{ company: "string", role: "string", period: "string", bullets: ["string"] }],
-        education: [{ title: "string", center: "string", location: "string" }],
-        skills: { frontend: ["string"], backend: ["string"], testing: ["string"] },
-        languages: ["string"],
-        additional: "string"
+export const applicationChatResponseFormat = `
+Devuelve un JSON con esta estructura exacta. No incluyas markdown ni texto fuera del JSON.
+
+{
+  "company": "nombre de la empresa extraído de la oferta",
+  "position": "título exacto del puesto ofertado",
+  "email": "email de contacto si aparece en la oferta, sino null",
+  "salary": "número con el salario máximo si hay rango, sino null",
+  "medium": "medio por el que se indica aplicar (ej: 'email', 'web', 'LinkedIn'), sino null",
+  "cv": {
+    "name": "nombre completo del candidato",
+    "title": "título profesional REESCRITO para encajar con el puesto ofertado",
+    "location": "ciudad, país",
+    "contact": {
+      "email": "email del candidato",
+      "github": "url github",
+      "linkedin": "url linkedin"
     },
-    cover: "texto plano de la carta de presentación"
-})
+    "profile": "párrafo de perfil REESCRITO usando keywords de la oferta",
+    "experience": [
+      {
+        "company": "nombre empresa",
+        "role": "cargo",
+        "period": "período",
+        "bullets": [
+          "bullet REFORMULADO con vocabulario de la oferta",
+          "..."
+        ]
+      }
+    ],
+    "education": [
+      { "title": "título formación", "center": "centro", "location": "ciudad" }
+    ],
+    "skills": {
+      "frontend": ["skills frontend ordenadas por relevancia para la oferta"],
+      "backend": ["skills backend"],
+      "testing": ["skills testing y otras"]
+    },
+    "languages": ["idioma — nivel"],
+    "additional": "info adicional relevante"
+  },
+  "cover": "carta de presentación completa en texto plano, personalizada para esta oferta"
+}
+`
 
 export const jobDescription = `
     Acerca del empleo

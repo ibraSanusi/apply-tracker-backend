@@ -12,7 +12,7 @@ export const saveApplicationSchema = {
         properties: {
             company: { type: 'string' },
             position: { type: 'string' },
-            email: { type: 'string', format: 'email' },
+            email: { type: 'string' },
             salary: { type: 'number' },
             medium: { type: 'string' },
             cv: { type: 'string' },
@@ -30,7 +30,7 @@ export const saveApplicationSchema = {
                         company: { type: 'string' },
                         position: { type: 'string' },
                         createdAt: { type: 'string', format: 'date-time' },
-                        email: { type: 'string', format: 'email' },
+                        email: { type: 'string' },
                         salary: { type: 'number' },
                         medium: { type: 'string' },
                         cvUrl: { type: 'string', format: 'uri' },
