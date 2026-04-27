@@ -1,15 +1,11 @@
 import jwt from 'jsonwebtoken'
 import dotenv from 'dotenv'
 import bcrypt from 'bcrypt'
-import { findUsers, insertUser, findUserByEmail, updateUserToken, updateVerifyToken, findUserById, setUserVerified, updateRecoveryToken, updatePassword, resetUserRecoveryToken } from "../repositories/userRepository.js"
+import { insertUser, findUserByEmail, updateUserToken, updateVerifyToken, findUserById, setUserVerified, updateRecoveryToken, updatePassword, resetUserRecoveryToken } from "../repositories/userRepository.js"
 import { sendEmail, sendVerificationTokenMail } from '../utils/mailSender.js'
 import { recoveryHtml } from '../utils/htmlTemplates.js'
 
 dotenv.config()
-
-export async function getAllUsersService() {
-    return await findUsers()
-}
 
 export async function registerUserService(userData, db) {
     return await insertUser(userData, db)

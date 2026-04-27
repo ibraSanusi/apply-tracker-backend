@@ -1,9 +1,4 @@
-import { getAllUsersService, registerUserService, loginUserService, sendVerificationTokenService, verifyEmailService, sendRecoveryMailService, recoverPasswordService } from "../services/userService.js"
-
-export async function welcomeCtrl(request, reply) {
-    const user = await getAllUsersService()
-    reply.send({ data: user })
-}
+import { registerUserService, loginUserService, sendVerificationTokenService, verifyEmailService, sendRecoveryMailService, recoverPasswordService } from "../services/userService.js"
 
 export async function registerCtrl(request, reply) {
     try {
