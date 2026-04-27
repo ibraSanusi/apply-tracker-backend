@@ -1,6 +1,12 @@
 import buildApp from './app.js'
 
 async function run() {
+    if (!process.env.IS_DOCKER) {
+        console.error("❌ ERROR: Este proyecto debe ejecutarse mediante Docker.");
+        console.error("Usa: docker compose up");
+        process.exit(1);
+    }
+
     const server = await buildApp({
         logger: {
             level: 'info',

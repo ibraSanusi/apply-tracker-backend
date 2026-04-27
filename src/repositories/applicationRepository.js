@@ -1,4 +1,3 @@
-import { insert, update } from "../utils/db.js"
 import prisma from "../prismaClient.js"
 
 export async function insertApplication(application, db) {
@@ -7,33 +6,36 @@ export async function insertApplication(application, db) {
 }
 
 export async function deleteApplication(id, db) {
-    const result = await db.query('DELETE FROM "JobApplication" WHERE id = $1', [id])
-    return result.rowCount
+    const result = await prisma.jobApplication.deleteMany({
+        where: { id: parseInt(id) }
+    })
+    return result.count
 }
 
-export async function findApplicationById(id, db) {
-    const query = `
-        SELECT * 
-        FROM "JobApplication" 
-        WHERE id = $1 
-    `
-    const result = await db.query(query, [id])
-    return result.rows[0]
+
+
+export async function findApplicationById(id) {
+    return await prisma.jobApplication.findUnique({
+        where: { id: parseInt(id) }
+    })
 }
+
 
 export async function getApplications(userId, db) {
-    const query = `
-        SELECT * 
-        FROM "JobApplication" 
-        WHERE "userId" = $1 
-    `
-    const result = await db.query(query, [userId])
-    return result.rows
+    return await prisma.jobApplication.findMany({
+        where: { userId: parseInt(userId) },
+        orderBy: { createdAt: 'desc' }
+    })
 }
 
-export async function updateApplication(id, data, db) {
-    return await update({ model: 'JobApplication', data, id }, db)
+
+export async function updateApplication(id, data) {
+    return await prisma.jobApplication.update({
+        where: { id: parseInt(id) },
+        data
+    })
 }
+
 
 export async function findApplicationsToFollowUp(date, db) {
     const query = `

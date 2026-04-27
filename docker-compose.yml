@@ -9,6 +9,8 @@ services:
     env_file:
       - .env
     volumes:
-      - .:/app
-      - /app/node_modules
-    command: sh -c "npx prisma migrate deploy && npm run dev"
+      - ./src:/app/src        # solo monta src para hot reload
+      - ./prisma:/app/prisma  # y prisma si lo necesitas en dev
+    environment:
+      - IS_DOCKER=true
+    command: sh -c "pnpm dlx prisma migrate deploy && pnpm run dev"

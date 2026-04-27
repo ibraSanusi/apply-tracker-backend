@@ -7,7 +7,7 @@ export async function saveApplicationCtrl(request, reply) {
         const data = await saveApplicationService({ ...request.body, userId: request.user.id }, request.server.db)
         reply.code(201).send({ data, message: 'Application saved correctly' })
     } catch (error) {
-        console.log('Application saving (Error): ', error)
+        console.error('Application saving (Error): ', error)
         reply.code(500).send({ message: 'Error saving application' })
     }
 }
@@ -30,7 +30,7 @@ export async function askChatCtrl(request, reply) {
             .code(200)
             .send(stream)
     } catch (error) {
-        console.log('askChat(error): ', error)
+        console.error('askChat(error): ', error)
         return reply.code(500).send({ message: 'Error while asking Chat GPT' })
     }
 }
@@ -40,7 +40,7 @@ export async function getApplicationsCtrl(request, reply) {
         const applications = await getApplicationsService(request.user.id, request.server.db)
         reply.code(200).send({ data: applications })
     } catch (error) {
-        console.log('Error getting applications: ', error)
+        console.error('Error getting applications: ', error)
         reply.code(500).send({ message: 'Error getting applications' })
     }
 }
@@ -60,7 +60,7 @@ export async function getApplicationByIdCtrl(request, reply) {
 
         reply.code(200).send({ data: application })
     } catch (error) {
-        console.log('Error getting application by ID: ', error)
+        console.error('Error getting application by ID: ', error)
         reply.code(500).send({ message: 'Error getting application' })
     }
 }
@@ -78,10 +78,10 @@ export async function updateApplicationCtrl(request, reply) {
             return reply.code(403).send({ message: 'No tienes permiso para editar esta aplicación' })
         }
 
-        const updated = await updateApplicationService(id, data, request.server.db)
+        const updated = await updateApplicationService(existing, data)
         reply.code(200).send({ data: updated, message: 'Application updated correctly' })
     } catch (error) {
-        console.log('Error updating application: ', error)
+        console.error('Error updating application: ', error)
         reply.code(500).send({ message: 'Error updating application' })
     }
 }
@@ -101,7 +101,7 @@ export async function deleteApplicationCtrl(request, reply) {
         await deleteApplicationService(id, request.server.db)
         reply.code(200).send({ message: 'Application deleted correctly' })
     } catch (error) {
-        console.log('Error deleting application: ', error)
+        console.error('Error deleting application: ', error)
         reply.code(500).send({ message: 'Error deleting application' })
     }
 }

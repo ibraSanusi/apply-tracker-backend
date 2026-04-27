@@ -73,6 +73,7 @@ export const getApplicationByIdSchema = {
                         medium: { type: 'string', nullable: true },
                         cvUrl: { type: 'string', format: 'uri' },
                         coverUrl: { type: 'string', format: 'uri' },
+                        cvPdfUrl: { type: 'string', format: 'uri', nullable: true },
                     }
                 }
             }
@@ -123,6 +124,7 @@ export const updateApplicationSchema = {
                         medium: { type: 'string', nullable: true },
                         cvUrl: { type: 'string', format: 'uri' },
                         coverUrl: { type: 'string', format: 'uri' },
+                        cvPdfUrl: { type: 'string', nullable: true },
                     }
                 },
                 message: { type: 'string' }

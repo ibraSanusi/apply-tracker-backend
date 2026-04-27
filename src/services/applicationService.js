@@ -10,7 +10,7 @@ import {
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
 import { applicationChatInstruction, applicationChatResponseFormat } from "../utils/constants.js";
 import { Readable } from 'node:stream'
-import { generateDocxFromJson } from "../utils/docxGenerator.js";
+import { generateDocxFromJson, convertDocxToPdf } from "../utils/docxGenerator.js";
 
 const s3Client = new S3Client({
     region: 'eu-north-1',
@@ -27,14 +27,16 @@ const openaiClient = new OpenAI({
 
 export async function saveApplicationService(body, db) {
     const { cv, cover, ...restBody } = body
-    const { coverSlug, cvSlug } = await uploadApplicationMediaS3({ cv, cover })
-    const application = await insertApplication({ coverSlug, cvSlug, ...restBody }, db)
+    const { coverSlug, cvSlug, cvPdfSlug } = await uploadApplicationMediaS3({ cv, cover })
+    const application = await insertApplication({ coverSlug, cvSlug, cvPdfSlug, ...restBody }, db)
 
     const coverUrl = await getApplicationObjectSignedUrl(coverSlug)
     const cvUrl = await getApplicationObjectSignedUrl(cvSlug)
+    const cvPdfUrl = await getApplicationObjectSignedUrl(cvPdfSlug)
 
-    return { ...application, cvUrl, coverUrl }
+    return { ...application, cvUrl, coverUrl, cvPdfUrl }
 }
+
 
 async function uploadFilesS3(files) {
     if (process.env.NODE_ENV === 'test') {
@@ -58,17 +60,20 @@ async function uploadFilesS3(files) {
 
 export async function uploadApplicationMediaS3({ cv, cover }) {
     const cvSlug = `applications/cv/${crypto.randomUUID()}.docx`
+    const cvPdfSlug = `applications/cv/${crypto.randomUUID()}.pdf`
     const coverSlug = `applications/cover/${crypto.randomUUID()}.txt`
 
     // cv is expected to be an object (from Chat/AI)
     const cvBuffer = await generateDocxFromJson(JSON.parse(cv));
+    const cvPdfBuffer = await convertDocxToPdf(cvBuffer);
 
-    const [cvUpload, coverUpload] = await uploadFilesS3([
+    const [cvUpload, cvPdfUpload, coverUpload] = await uploadFilesS3([
         {
             key: cvSlug,
             body: cvBuffer,
             contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
         },
+        { key: cvPdfSlug, body: cvPdfBuffer, contentType: 'application/pdf' },
         {
             key: coverSlug,
             body: Buffer.from(cover),
@@ -76,10 +81,11 @@ export async function uploadApplicationMediaS3({ cv, cover }) {
         }
     ])
 
-    if (!cvUpload || !coverUpload) { throw new Error('Error uploading cover and cv to AWS') }
+    if (!cvUpload || !cvPdfUpload || !coverUpload) { throw new Error('Error uploading cover, cv and pdf to AWS') }
 
-    return { cvSlug, coverSlug }
+    return { cvSlug, cvPdfSlug, coverSlug }
 }
+
 
 export async function getApplicationObjectSignedUrl(key) {
     if (process.env.NODE_ENV === 'test') return key
@@ -130,8 +136,9 @@ export async function getApplicationByIdService(id, db) {
 
     const cvUrl = await getApplicationObjectSignedUrl(application.cvSlug)
     const coverUrl = await getApplicationObjectSignedUrl(application.coverSlug)
+    const cvPdfUrl = await getApplicationObjectSignedUrl(application.cvPdfSlug)
 
-    return { ...application, cvUrl, coverUrl }
+    return { ...application, cvUrl, coverUrl, cvPdfUrl }
 }
 
 export async function deleteFileFromS3(key) {
@@ -148,25 +155,33 @@ export async function deleteFileFromS3(key) {
     }
 }
 
-export async function updateApplicationService(id, body, db) {
-    const existingApplication = await findApplicationById(id, db)
-    if (!existingApplication) throw new Error('Application not found')
-
+export async function updateApplicationService(existingApplication, body) {
     const { cv, cover, ...restBody } = body
     const updateData = { ...restBody }
 
     // Si se proporciona un nuevo CV, cargamos el nuevo y borramos el anterior
     if (cv) {
         const cvSlug = `applications/cv/${crypto.randomUUID()}.docx`
+        const cvPdfSlug = `applications/cv/${crypto.randomUUID()}.pdf`
         const cvBuffer = await generateDocxFromJson(JSON.parse(cv));
-        await uploadFilesS3([{
-            key: cvSlug,
-            body: cvBuffer,
-            contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-        }])
-        await deleteFileFromS3(existingApplication.cvSlug)
+        const cvPdfBuffer = await convertDocxToPdf(cvBuffer);
+
+        await uploadFilesS3([
+            {
+                key: cvSlug,
+                body: cvBuffer,
+                contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+            },
+            { key: cvPdfSlug, body: cvPdfBuffer, contentType: 'application/pdf' }
+        ])
+
+        if (existingApplication.cvSlug) await deleteFileFromS3(existingApplication.cvSlug)
+        if (existingApplication.cvPdfSlug) await deleteFileFromS3(existingApplication.cvPdfSlug)
+
         updateData.cvSlug = cvSlug
+        updateData.cvPdfSlug = cvPdfSlug
     }
+
 
     // Si se proporciona un nuevo Cover, cargamos el nuevo y borramos el anterior
     if (cover) {
@@ -180,13 +195,15 @@ export async function updateApplicationService(id, body, db) {
         updateData.coverSlug = coverSlug
     }
 
-    const updatedApplication = await updateApplication(id, updateData, db)
+    const updatedApplication = await updateApplication(existingApplication.id, updateData)
 
     const cvUrl = await getApplicationObjectSignedUrl(updatedApplication.cvSlug)
     const coverUrl = await getApplicationObjectSignedUrl(updatedApplication.coverSlug)
+    const cvPdfUrl = await getApplicationObjectSignedUrl(updatedApplication.cvPdfSlug)
 
-    return { ...updatedApplication, cvUrl, coverUrl }
+    return { ...updatedApplication, cvUrl, coverUrl, cvPdfUrl }
 }
+
 
 export async function deleteApplicationService(id, db) {
     const application = await findApplicationById(id, db)
@@ -195,9 +212,11 @@ export async function deleteApplicationService(id, db) {
     const deletedCount = await deleteApplication(id, db)
 
     if (deletedCount > 0) {
-        await deleteFileFromS3(application.cvSlug)
-        await deleteFileFromS3(application.coverSlug)
+        if (application.cvSlug) await deleteFileFromS3(application.cvSlug)
+        if (application.coverSlug) await deleteFileFromS3(application.coverSlug)
+        if (application.cvPdfSlug) await deleteFileFromS3(application.cvPdfSlug)
     }
+
 
     return deletedCount
 }

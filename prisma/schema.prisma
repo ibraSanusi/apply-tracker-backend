@@ -36,6 +36,7 @@ model JobApplication {
   status    String   @default("applied")
   coverSlug String?
   cvSlug    String?
+  cvPdfSlug String?
   salary    Int?
   email     String?
   createdAt DateTime @default(now())

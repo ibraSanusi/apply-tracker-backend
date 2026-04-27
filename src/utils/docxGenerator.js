@@ -7,6 +7,7 @@ import {
     TabStopType,
     Tab,
 } from "docx";
+import libreoffice from 'libreoffice-convert';
 
 const COLORS = {
     PRIMARY: "1A56DB", // Blue
@@ -285,3 +286,12 @@ export const generateDocxFromJson = async (cvData) => {
 
     return await Packer.toBuffer(doc);
 };
+
+export async function convertDocxToPdf(docxBuffer) {
+    return new Promise((resolve, reject) => {
+        libreoffice.convert(docxBuffer, '.pdf', undefined, (err, done) => {
+            if (err) return reject(err);
+            resolve(done);
+        });
+    });
+}
