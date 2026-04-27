@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "dev": "node --watch src/server.js",
+    "dev": "nodemon --watch src src/server.js",
     "test": "node --test",
     "prisma:generate": "npx prisma generate",
     "prisma:migrate": "npx prisma migrate dev",
