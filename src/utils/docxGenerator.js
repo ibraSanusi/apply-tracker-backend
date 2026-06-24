@@ -297,22 +297,22 @@ export const generateDocxFromJson = async (cvData) => {
     }
 
     // Others / Additional
-    // if (additional) {
-    //     documentChildren.push(
-    //         createSectionHeader("Otros"),
-    //         new Paragraph({
-    //             children: [
-    //                 new TextRun({
-    //                     text: additional,
-    //                     color: COLORS.TEXT,
-    //                     size: 21,
-    //                     font: FONTS.MAIN,
-    //                 }),
-    //             ],
-    //             spacing: { before: 100 },
-    //         })
-    //     );
-    // }
+    if (additional) {
+        documentChildren.push(
+            createSectionHeader("Otros"),
+            new Paragraph({
+                children: [
+                    new TextRun({
+                        text: additional,
+                        color: COLORS.TEXT,
+                        size: 21,
+                        font: FONTS.MAIN,
+                    }),
+                ],
+                spacing: { before: 100 },
+            })
+        );
+    }
 
     const doc = new Document({
         sections: [{
