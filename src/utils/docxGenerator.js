@@ -146,6 +146,174 @@ export const generateDocxFromJson = async (cvData) => {
         additional
     } = cvData;
 
+    const documentChildren = [
+        // Name
+        new Paragraph({
+            children: [
+                new TextRun({
+                    text: name,
+                    bold: true,
+                    size: 48, // 24pt
+                    color: COLORS.TEXT,
+                    font: FONTS.TITLE,
+                }),
+            ],
+            spacing: { after: 40 },
+        }),
+        // Title
+        new Paragraph({
+            children: [
+                new TextRun({
+                    text: title,
+                    color: COLORS.PRIMARY,
+                    bold: true,
+                    size: 24, // 12pt
+                    font: FONTS.MAIN,
+                }),
+            ],
+            spacing: { after: 160 },
+        }),
+        // Location & contact (Phone, Email)
+        new Paragraph({
+            tabStops: [{ type: TabStopType.RIGHT, position: 9500 }],
+            children: [
+                new TextRun({
+                    text: location || "",
+                    color: COLORS.SECONDARY,
+                    size: 19, // 9.5pt
+                    font: FONTS.MAIN,
+                }),
+                new TextRun({ children: [new Tab()] }),
+                ...(contact && contact.phone ? [
+                    new TextRun({ text: `📞 ${contact.phone}`, color: COLORS.SECONDARY, size: 19, font: FONTS.MAIN }),
+                    new TextRun({ text: "   ·   ", color: COLORS.SECONDARY, size: 19, font: FONTS.MAIN }),
+                ] : []),
+                new TextRun({ text: `✉  ${contact?.email || ""}`, color: COLORS.SECONDARY, size: 19, font: FONTS.MAIN }),
+            ],
+            spacing: { after: 80 },
+        }),
+    ];
+
+    // Add social links row if at least one exists
+    if (contact?.github || contact?.linkedin) {
+        const socialChildren = [];
+        if (contact.github) {
+            socialChildren.push(
+                new TextRun({
+                    text: contact.github,
+                    color: COLORS.PRIMARY,
+                    size: 19,
+                    font: FONTS.MAIN,
+                    underline: {},
+                })
+            );
+        }
+        if (contact.linkedin) {
+            socialChildren.push(new TextRun({ children: [new Tab()] }));
+            socialChildren.push(
+                new TextRun({
+                    text: contact.linkedin,
+                    color: COLORS.PRIMARY,
+                    size: 19,
+                    font: FONTS.MAIN,
+                    underline: {},
+                })
+            );
+        }
+        documentChildren.push(
+            new Paragraph({
+                tabStops: [{ type: TabStopType.RIGHT, position: 9500 }],
+                children: socialChildren,
+                spacing: { after: 200 },
+            })
+        );
+    }
+
+    // Now push all standard section content into documentChildren
+    documentChildren.push(
+        // Profile
+        createSectionHeader("Perfil Profesional"),
+        new Paragraph({
+            children: [
+                new TextRun({
+                    text: profile,
+                    color: COLORS.SECONDARY,
+                    size: 21, // 10.5pt
+                    font: FONTS.MAIN,
+                }),
+            ],
+            spacing: { before: 100, after: 100 },
+        }),
+
+        // Experience
+        createSectionHeader("Experiencia Profesional"),
+        ...experience.flatMap(createExperienceItem),
+
+        // Education
+        createSectionHeader("Formación"),
+        ...education.map(edu =>
+            new Paragraph({
+                children: [
+                    new TextRun({
+                        text: edu.title,
+                        bold: true,
+                        size: 21,
+                        color: COLORS.TEXT,
+                        font: FONTS.MAIN,
+                    }),
+                    new TextRun({ text: "\n" }),
+                    new TextRun({
+                        text: ` ${edu.center}  ·  ${edu.location}`,
+                        color: COLORS.SECONDARY,
+                        italics: true,
+                        size: 19,
+                        font: FONTS.MAIN,
+                    }),
+                ],
+                spacing: { before: 150, after: 150 },
+            })
+        ),
+
+        // Skills
+        createSectionHeader("Habilidades Técnicas"),
+        ...Object.entries(skills).flatMap(([key, items]) =>
+            createSkillsParagraph(key.charAt(0).toUpperCase() + key.slice(1), items)
+        )
+    );
+
+    // Languages
+    if (languages && languages.length > 0) {
+        documentChildren.push(
+            createSectionHeader("Idiomas"),
+            ...languages.map(lang =>
+                new Paragraph({
+                    text: lang,
+                    bullet: { level: 0 },
+                    spacing: { before: 100 },
+                    style: "normal"
+                })
+            )
+        );
+    }
+
+    // Others / Additional
+    // if (additional) {
+    //     documentChildren.push(
+    //         createSectionHeader("Otros"),
+    //         new Paragraph({
+    //             children: [
+    //                 new TextRun({
+    //                     text: additional,
+    //                     color: COLORS.TEXT,
+    //                     size: 21,
+    //                     font: FONTS.MAIN,
+    //                 }),
+    //             ],
+    //             spacing: { before: 100 },
+    //         })
+    //     );
+    // }
+
     const doc = new Document({
         sections: [{
             properties: {
@@ -158,129 +326,7 @@ export const generateDocxFromJson = async (cvData) => {
                     },
                 },
             },
-            children: [
-                // Header - Using TabStops for perfect alignment and stability
-                new Paragraph({
-                    tabStops: [{
-                        type: TabStopType.RIGHT,
-                        position: 9500, // Roughly the right margin
-                    }],
-                    children: [
-                        new TextRun({
-                            text: name,
-                            bold: true,
-                            size: 52, // 26pt
-                            color: COLORS.TEXT,
-                            font: FONTS.TITLE,
-                        }),
-                        new TextRun({ children: [new Tab()] }),
-                        new TextRun({ text: `✉  ${contact.email}`, color: COLORS.SECONDARY, size: 19, font: FONTS.MAIN }),
-                    ],
-                }),
-                new Paragraph({
-                    tabStops: [{ type: TabStopType.RIGHT, position: 9500 }],
-                    children: [
-                        new TextRun({
-                            text: title,
-                            color: COLORS.PRIMARY,
-                            bold: true,
-                            size: 26, // 13pt
-                            font: FONTS.MAIN,
-                        }),
-                        new TextRun({ children: [new Tab()] }),
-                        new TextRun({ text: contact.github, color: COLORS.PRIMARY, size: 20, font: FONTS.MAIN, underline: {} }),
-                    ],
-                }),
-                new Paragraph({
-                    tabStops: [{ type: TabStopType.RIGHT, position: 9500 }],
-                    children: [
-                        new TextRun({
-                            text: location,
-                            color: COLORS.SECONDARY,
-                            italics: true,
-                            size: 19, // 9.5pt
-                            font: FONTS.MAIN,
-                        }),
-                        new TextRun({ children: [new Tab()] }),
-                        new TextRun({ text: contact.linkedin, color: COLORS.PRIMARY, size: 20, font: FONTS.MAIN, underline: {} }),
-                    ],
-                    spacing: { after: 200 },
-                }),
-
-                // Profile
-                createSectionHeader("Perfil Profesional"),
-                new Paragraph({
-                    children: [
-                        new TextRun({
-                            text: profile,
-                            color: COLORS.SECONDARY,
-                            size: 21, // 10.5pt
-                            font: FONTS.MAIN,
-                        }),
-                    ],
-                    spacing: { before: 100, after: 100 },
-                }),
-
-                // Experience
-                createSectionHeader("Experiencia Profesional"),
-                ...experience.flatMap(createExperienceItem),
-
-                // Education
-                createSectionHeader("Formación"),
-                ...education.map(edu =>
-                    new Paragraph({
-                        children: [
-                            new TextRun({
-                                text: edu.title,
-                                bold: true,
-                                size: 21,
-                                color: COLORS.TEXT,
-                                font: FONTS.MAIN,
-                            }),
-                            new TextRun({ text: "\n" }),
-                            new TextRun({
-                                text: ` ${edu.center}  ·  ${edu.location}`,
-                                color: COLORS.SECONDARY,
-                                italics: true,
-                                size: 19,
-                                font: FONTS.MAIN,
-                            }),
-                        ],
-                        spacing: { before: 150, after: 150 },
-                    })
-                ),
-
-                // Skills
-                createSectionHeader("Habilidades Técnicas"),
-                ...Object.entries(skills).flatMap(([key, items]) =>
-                    createSkillsParagraph(key.charAt(0).toUpperCase() + key.slice(1), items)
-                ),
-
-                // Languages
-                createSectionHeader("Idiomas"),
-                ... (languages || []).map(lang =>
-                    new Paragraph({
-                        text: lang,
-                        bullet: { level: 0 },
-                        spacing: { before: 100 },
-                        style: "normal"
-                    })
-                ),
-
-                // Others
-                createSectionHeader("Otros"),
-                new Paragraph({
-                    children: [
-                        new TextRun({
-                            text: additional,
-                            color: COLORS.TEXT,
-                            size: 21,
-                            font: FONTS.MAIN,
-                        }),
-                    ],
-                    spacing: { before: 100 },
-                }),
-            ],
+            children: documentChildren,
         }],
     });
 

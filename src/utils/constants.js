@@ -2,6 +2,7 @@ export const cvTemplate = `
 Ibrahim Ayodeji Sanusi
 Desarrollador Full Stack Junior
 Madrid, España
+📞 +34 631 75 20 39
 ✉  ibra.sanusi.ayo@gmail.com
 github.com/ibraSanusi
 linkedin.com/in/ibrahim-ayodeji-sanusi
@@ -135,6 +136,8 @@ export const applicationChatInstruction = `
 
     5. Extrae del job description: empresa, puesto, email de contacto (si aparece), salario (si aparece), medio de contacto.
 
+    6. CONTACTO DEL CANDIDATO: Mantén siempre el correo, github, linkedin y el número de teléfono del candidato (si está presente en el CV base) en la sección correspondiente. No inventes el número de teléfono, si no está en el CV base pon null, pero si está, inclúyelo en la estructura de contacto bajo la clave "phone".
+
     REGLA CRÍTICA: El output debe ser notablemente diferente al CV de entrada. Si el CV adaptado se parece demasiado al original, has fallado en la tarea.
 
     Devuelve ÚNICAMENTE un objeto JSON válido, sin markdown ni explicaciones.
@@ -157,6 +160,7 @@ Devuelve un JSON con esta estructura exacta. No incluyas markdown ni texto fuera
     "location": "ciudad, país",
     "contact": {
       "email": "email del candidato",
+      "phone": "teléfono del candidato si está en el CV base, sino null",
       "github": "url github",
       "linkedin": "url linkedin"
     },
@@ -247,6 +251,7 @@ export const sampleCV = {
   location: "Fuenlabrada, Madrid",
   contact: {
     email: "ibra.sanusi.ayo@gmail.com",
+    phone: "+34 600 000 000",
     github: "github.com/ibraSanusi",
     linkedin: "linkedin.com/in/ibrahim-ayodeji-sanusi"
   },
