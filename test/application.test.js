@@ -1,6 +1,7 @@
 import { after, before, describe, it, mock } from 'node:test'
 import libreoffice from 'libreoffice-convert'
 import { uploadApplicationMediaS3 } from '../src/services/applicationService.js'
+import { generateDocxFromJson } from '../src/utils/docxGenerator.js'
 import buildApp from '../src/app.js'
 import { loginUser, registerUser } from './utils.js'
 import assert from 'node:assert'
@@ -49,6 +50,16 @@ describe('Application', () => {
         assert.ok(typeof cvSlug === 'string')
         assert.ok(typeof coverSlug === 'string')
         assert.ok(typeof cvPdfSlug === 'string')
+    })
+
+
+    it('should generate docx in English, Spanish and German without errors', async () => {
+        const docxEs = await generateDocxFromJson({ ...sampleCV, language: 'es' })
+        const docxEn = await generateDocxFromJson({ ...sampleCV, language: 'en' })
+        const docxDe = await generateDocxFromJson({ ...sampleCV, language: 'de' })
+        assert.ok(docxEs instanceof Buffer)
+        assert.ok(docxEn instanceof Buffer)
+        assert.ok(docxDe instanceof Buffer)
     })
 
 

@@ -15,6 +15,7 @@ export const saveApplicationSchema = {
             email: { type: 'string' },
             salary: { type: 'number' },
             medium: { type: 'string' },
+            language: { type: 'string', enum: ['es', 'en', 'de'] },
             cv: { type: 'string' },
             cover: { type: 'string' },
         }

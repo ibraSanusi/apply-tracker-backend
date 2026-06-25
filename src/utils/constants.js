@@ -1,3 +1,31 @@
+export const cvTranslations = {
+  es: {
+    profile: "Perfil Profesional",
+    experience: "Experiencia Profesional",
+    education: "Formación",
+    skills: "Habilidades Técnicas",
+    languages: "Idiomas",
+    additional: "Otros"
+  },
+  en: {
+    profile: "Professional Profile",
+    experience: "Professional Experience",
+    education: "Education",
+    skills: "Technical Skills",
+    languages: "Languages",
+    additional: "Others"
+  }
+  ,
+  de: {
+    profile: "Berufliches Profil",
+    experience: "Berufserfahrung",
+    education: "Ausbildung",
+    skills: "Technische Fähigkeiten",
+    languages: "Sprachen",
+    additional: "Sonstiges"
+  }
+};
+
 export const cvTemplate = `
 Ibrahim Ayodeji Sanusi
 Desarrollador Full Stack Junior
@@ -138,11 +166,13 @@ export const applicationChatInstruction = `
 
     6. CONTACTO DEL CANDIDATO: Mantén siempre el correo, github, linkedin y el número de teléfono del candidato (si está presente en el CV base) en la sección correspondiente. No inventes el número de teléfono, si no está en el CV base pon null, pero si está, inclúyelo en la estructura de contacto bajo la clave "phone".
 
+    7. IDIOMA DEL CV: Determina el idioma de la oferta de trabajo. Si la oferta está en español, el campo "language" dentro de "cv" debe ser "es". Si la oferta está en inglés, alemán, o cualquier otro idioma, el campo "language" debe ser "en". Traduce el contenido de todo el CV (perfil, responsabilidades de la experiencia, títulos de educación, habilidades, idiomas, etc.) a dicho idioma.
+
     REGLA CRÍTICA: El output debe ser notablemente diferente al CV de entrada. Si el CV adaptado se parece demasiado al original, has fallado en la tarea.
 
     Devuelve ÚNICAMENTE un objeto JSON válido, sin markdown ni explicaciones.
     Si un campo no aparece en la oferta, devuelve null.
-    Recuerda pasar el cv al idioma de la oferta
+    Recuerda pasar el cv al idioma detectado de la oferta ('es' o 'en')
 `
 
 export const applicationChatResponseFormat = `
@@ -155,6 +185,7 @@ Devuelve un JSON con esta estructura exacta. No incluyas markdown ni texto fuera
   "salary": "número con el salario máximo si hay rango, sino null",
   "medium": "medio por el que se indica aplicar (ej: 'email', 'web', 'LinkedIn'), sino null",
   "cv": {
+    "language": "idioma detectado para el CV ('es' o 'en' o 'de')",
     "name": "nombre completo del candidato",
     "title": "título profesional REESCRITO para encajar con el puesto ofertado",
     "location": "ciudad, país",
@@ -246,6 +277,7 @@ export const jobDescription = `
 `
 
 export const sampleCV = {
+  language: "es",
   name: "Ibrahim Ayodeji Sanusi",
   title: "Desarrollador Full Stack Junior",
   location: "Fuenlabrada, Madrid",

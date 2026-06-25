@@ -8,6 +8,7 @@ import {
     Tab,
 } from "docx";
 import libreoffice from 'libreoffice-convert';
+import { cvTranslations } from "./constants.js";
 
 const COLORS = {
     PRIMARY: "1A56DB", // Blue
@@ -134,6 +135,7 @@ const createSkillsParagraph = (title, items) => {
 
 export const generateDocxFromJson = async (cvData) => {
     const {
+        language,
         name,
         title,
         location,
@@ -145,6 +147,9 @@ export const generateDocxFromJson = async (cvData) => {
         languages,
         additional
     } = cvData;
+
+    const lang = language === 'en' ? 'en' : language === 'de' ? 'de' : 'es';
+    const t = cvTranslations[lang];
 
     const documentChildren = [
         // Name
@@ -232,7 +237,7 @@ export const generateDocxFromJson = async (cvData) => {
     // Now push all standard section content into documentChildren
     documentChildren.push(
         // Profile
-        createSectionHeader("Perfil Profesional"),
+        createSectionHeader(t.profile),
         new Paragraph({
             children: [
                 new TextRun({
@@ -246,11 +251,11 @@ export const generateDocxFromJson = async (cvData) => {
         }),
 
         // Experience
-        createSectionHeader("Experiencia Profesional"),
+        createSectionHeader(t.experience),
         ...experience.flatMap(createExperienceItem),
 
         // Education
-        createSectionHeader("Formación"),
+        createSectionHeader(t.education),
         ...education.map(edu =>
             new Paragraph({
                 children: [
@@ -275,7 +280,7 @@ export const generateDocxFromJson = async (cvData) => {
         ),
 
         // Skills
-        createSectionHeader("Habilidades Técnicas"),
+        createSectionHeader(t.skills),
         ...Object.entries(skills).flatMap(([key, items]) =>
             createSkillsParagraph(key.charAt(0).toUpperCase() + key.slice(1), items)
         )
@@ -284,7 +289,7 @@ export const generateDocxFromJson = async (cvData) => {
     // Languages
     if (languages && languages.length > 0) {
         documentChildren.push(
-            createSectionHeader("Idiomas"),
+            createSectionHeader(t.languages),
             ...languages.map(lang =>
                 new Paragraph({
                     text: lang,
@@ -299,7 +304,7 @@ export const generateDocxFromJson = async (cvData) => {
     // Others / Additional
     if (additional) {
         documentChildren.push(
-            createSectionHeader("Otros"),
+            createSectionHeader(t.additional),
             new Paragraph({
                 children: [
                     new TextRun({
