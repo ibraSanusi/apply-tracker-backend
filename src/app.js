@@ -15,7 +15,7 @@ export async function buildApp(opts = {}) {
             }
             try {
                 const hostname = new URL(origin).hostname
-                if (hostname === "localhost") {
+                if (hostname === "localhost" || hostname === import.meta.env.FRONTEND_URL) {
                     cb(null, true)
                     return
                 }
